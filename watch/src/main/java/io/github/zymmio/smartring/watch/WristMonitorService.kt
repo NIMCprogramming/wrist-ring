@@ -17,6 +17,8 @@ import com.google.android.gms.wearable.Wearable
 
 class WristMonitorService : Service(), SensorEventListener {
     private val handler = Handler(Looper.getMainLooper())
+    private var hasFreshReading = false
+    private var sensorRegistered = false
     private val sensorManager by lazy { getSystemService(SensorManager::class.java) }
     private val offBodySensor by lazy {
         sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT)
@@ -53,8 +55,7 @@ class WristMonitorService : Service(), SensorEventListener {
         )
 
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(MONITORING, true).apply()
-        sensorManager.unregisterListener(this)
-        sensorManager.registerListener(this, offBodySensor, SensorManager.SENSOR_DELAY_NORMAL)
+        if (!sensorRegistered) startSensor()
         handler.removeCallbacks(heartbeat)
         handler.postDelayed(heartbeat, HEARTBEAT_INTERVAL)
         return START_STICKY
@@ -62,6 +63,8 @@ class WristMonitorService : Service(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent) {
         val onWrist = event.values[0] == 1f
+        hasFreshReading = true
+        handler.removeCallbacks(retrySensor)
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(ON_WRIST, onWrist).apply()
         sendState(monitoring = true, onWrist = onWrist)
     }
@@ -70,6 +73,7 @@ class WristMonitorService : Service(), SensorEventListener {
 
     override fun onDestroy() {
         handler.removeCallbacks(heartbeat)
+        handler.removeCallbacks(retrySensor)
         sensorManager.unregisterListener(this)
         super.onDestroy()
     }
@@ -78,6 +82,7 @@ class WristMonitorService : Service(), SensorEventListener {
 
     private fun stopMonitoring() {
         handler.removeCallbacks(heartbeat)
+        handler.removeCallbacks(retrySensor)
         sensorManager.unregisterListener(this)
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().clear().apply()
         sendState(monitoring = false, onWrist = false)
@@ -94,10 +99,37 @@ class WristMonitorService : Service(), SensorEventListener {
         Wearable.getDataClient(this).putDataItem(request)
     }
 
+    private fun startSensor() {
+        hasFreshReading = false
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit().remove(ON_WRIST).apply()
+        sendState(monitoring = false, onWrist = false)
+        sensorManager.unregisterListener(this)
+        sensorRegistered = sensorManager.registerListener(
+            this,
+            offBodySensor,
+            SensorManager.SENSOR_DELAY_NORMAL,
+        )
+        handler.removeCallbacks(retrySensor)
+        handler.postDelayed(retrySensor, SENSOR_RETRY_INTERVAL)
+    }
+
+    private val retrySensor = object : Runnable {
+        override fun run() {
+            if (hasFreshReading) return
+            sensorManager.unregisterListener(this@WristMonitorService)
+            sensorRegistered = sensorManager.registerListener(
+                this@WristMonitorService,
+                offBodySensor,
+                SensorManager.SENSOR_DELAY_NORMAL,
+            )
+            handler.postDelayed(this, SENSOR_RETRY_INTERVAL)
+        }
+    }
+
     private val heartbeat = object : Runnable {
         override fun run() {
             val state = getSharedPreferences(PREFS, MODE_PRIVATE)
-            if (state.contains(ON_WRIST)) {
+            if (hasFreshReading && state.contains(ON_WRIST)) {
                 sendState(monitoring = true, onWrist = state.getBoolean(ON_WRIST, false))
             }
             handler.postDelayed(this, HEARTBEAT_INTERVAL)
@@ -116,5 +148,6 @@ class WristMonitorService : Service(), SensorEventListener {
         private const val CHANNEL = "wrist_monitoring"
         private const val NOTIFICATION_ID = 1
         private const val HEARTBEAT_INTERVAL = 5 * 60 * 1000L
+        private const val SENSOR_RETRY_INTERVAL = 10 * 1000L
     }
 }

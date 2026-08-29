@@ -50,7 +50,9 @@ are not reliable enough.
 The foreground service sends a health message every five minutes. The
 phone stops trusting wrist data after ten minutes without a message. The watch
 restarts monitoring after a reboot or app update only when monitoring was active
-before it stopped.
+before it stopped. A restarted watch publishes `Unknown` until it receives a
+fresh sensor event. It retries sensor registration every ten seconds and never
+sends a saved wrist value from before the restart.
 
 ## Implementation order
 
