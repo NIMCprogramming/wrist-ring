@@ -24,6 +24,7 @@ The physical sensor still needs these short manual checks:
 7. Close the watch app. Confirm its active notification remains visible.
 8. Put on and remove the watch again. Confirm phone updates continue.
 9. Press `Stop` in the watch app. Confirm the phone shows `Unknown` after reopening it.
+10. Disable Bluetooth and Wi-Fi on the watch. Confirm the phone shows `Watch disconnected`.
 
 ## Call test gate
 

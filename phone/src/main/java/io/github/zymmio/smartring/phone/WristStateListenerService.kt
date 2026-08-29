@@ -3,6 +3,8 @@ package io.github.zymmio.smartring.phone
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataMapItem
+import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
 
 class WristStateListenerService : WearableListenerService() {
@@ -11,22 +13,34 @@ class WristStateListenerService : WearableListenerService() {
             .filter { it.type == DataEvent.TYPE_CHANGED && it.dataItem.uri.path == PATH }
             .forEach {
                 val data = DataMapItem.fromDataItem(it.dataItem).dataMap
+                WatchState.setConnected(this, true)
                 getSharedPreferences(PREFS, MODE_PRIVATE).edit().apply {
                     if (data.getBoolean(MONITORING)) {
                         putBoolean(ON_WRIST, data.getBoolean(ON_WRIST))
                         putLong(UPDATED_AT, data.getLong(UPDATED_AT))
                     } else {
-                        clear()
+                        remove(ON_WRIST)
+                        remove(UPDATED_AT)
                     }
                 }.apply()
             }
     }
 
+    override fun onPeerConnected(peer: Node) {
+        WatchState.setConnected(this, true)
+    }
+
+    override fun onPeerDisconnected(peer: Node) {
+        Wearable.getNodeClient(this).connectedNodes
+            .addOnSuccessListener { WatchState.setConnected(this, it.isNotEmpty()) }
+            .addOnFailureListener { WatchState.setConnected(this, false) }
+    }
+
     companion object {
         const val PATH = "/wrist-state"
-        const val PREFS = "wrist_state"
-        const val ON_WRIST = "on_wrist"
-        const val UPDATED_AT = "updated_at"
+        const val PREFS = WatchState.PREFS
+        const val ON_WRIST = WatchState.ON_WRIST
+        const val UPDATED_AT = WatchState.UPDATED_AT
         private const val MONITORING = "monitoring"
     }
 }

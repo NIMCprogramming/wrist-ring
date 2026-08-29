@@ -54,3 +54,15 @@ assert_state() {
 assert_state on_wrist true true
 assert_state off_wrist true false
 assert_state unknown false false
+
+"$ADB" -s "$PHONE" logcat -c
+"$ADB" -s "$PHONE" shell am broadcast \
+  -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
+  -a io.github.zymmio.smartring.DEBUG_READ_STATE \
+  --ez connected false >/dev/null
+if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=disconnected"; then
+  echo "PASS: disconnected clears wrist state"
+else
+  echo "FAIL: disconnected did not clear wrist state" >&2
+  exit 1
+fi

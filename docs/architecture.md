@@ -30,7 +30,8 @@ Path: `/wrist-state`
 | `monitoring` | Boolean | `true` while the watch foreground service is active |
 | `updated_at` | Long | Watch wall-clock time in Unix milliseconds |
 
-The phone treats data as untrusted input. Unknown, disconnected, or invalid
+The phone tracks reachable Wear OS nodes separately from wrist state. A node
+disconnect clears the saved wrist state. Unknown, disconnected, or invalid
 state must fail safely by allowing the normal ringtone.
 
 ## Battery rule
