@@ -1,12 +1,16 @@
 <resources>
-    <string name="app_name">Smart Ringtone</string>
-    <string name="title">Watch wrist state</string>
-    <string name="status_unknown">Unknown</string>
+    <string name="app_name">Wrist Ring</string>
+    <string name="eyebrow">SMART CALL SOUND</string>
+    <string name="title">Your phone follows your wrist.</string>
+    <string name="subtitle">Calls stay quiet here while your watch keeps you informed.</string>
+    <string name="watch_status">WATCH STATUS</string>
+    <string name="status_unknown">Waiting for watch</string>
     <string name="status_disconnected">Watch disconnected</string>
     <string name="status_on_wrist">On wrist</string>
     <string name="status_off_wrist">Off wrist</string>
-    <string name="call_screening_enabled">Call screening enabled</string>
-    <string name="call_screening_disabled">Call screening disabled</string>
-    <string name="call_screening_permission_needed">Phone permission needed</string>
-    <string name="enable_call_screening">Enable call screening</string>
+    <string name="call_sound">CALL SOUND</string>
+    <string name="call_screening_enabled">Ready · Phone rings only when needed</string>
+    <string name="call_screening_disabled">Setup needed to control call sound</string>
+    <string name="call_screening_permission_needed">One phone permission still needed</string>
+    <string name="enable_call_screening">Finish setup</string>
 </resources>

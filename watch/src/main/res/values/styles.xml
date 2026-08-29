@@ -1,6 +1,7 @@
 <resources>
-    <style name="Theme.SmartRingtone.Watch" parent="android:style/Theme.Material.NoActionBar">
-        <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#8FAEFF</item>
+    <style name="Theme.WristRing.Watch" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorAccent">#E9A23B</item>
+        <item name="android:windowBackground">#0C1824</item>
     </style>
 </resources>

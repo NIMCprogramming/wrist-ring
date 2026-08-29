@@ -1,6 +1,6 @@
-# Smart Ringtone
+# Wrist Ring
 
-Smart Ringtone is an Android experiment for a CMF Phone 1 and Galaxy Watch4.
+Wrist Ring is an Android app for a CMF Phone 1 and Galaxy Watch4.
 It will silence an incoming call on the phone when the watch is on the user's
 wrist. It must not change the watch's sound or vibration settings.
 

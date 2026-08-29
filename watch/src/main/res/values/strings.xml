@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">Smart Ringtone</string>
-    <string name="status_waiting">Reading wrist state…</string>
+    <string name="app_name">Wrist Ring</string>
+    <string name="status_waiting">Finding wrist…</string>
     <string name="status_on_wrist">On wrist</string>
     <string name="status_off_wrist">Off wrist</string>
-    <string name="start_monitoring">Start</string>
-    <string name="stop_monitoring">Stop</string>
+    <string name="start_monitoring">Start sensing</string>
+    <string name="stop_monitoring">Stop sensing</string>
     <string name="channel_name">Wrist monitoring</string>
-    <string name="monitoring_title">Smart Ringtone active</string>
+    <string name="monitoring_title">Wrist Ring active</string>
     <string name="monitoring_text">Watching wrist state</string>
 </resources>

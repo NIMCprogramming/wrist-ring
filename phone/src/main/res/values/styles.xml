@@ -1,6 +1,10 @@
 <resources>
-    <style name="Theme.SmartRingtone" parent="android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#345CA8</item>
+    <style name="Theme.WristRing" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorAccent">#E9A23B</item>
+        <item name="android:navigationBarColor">#F5F1E8</item>
+        <item name="android:statusBarColor">#F5F1E8</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>

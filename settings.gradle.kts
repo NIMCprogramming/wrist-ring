@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Smart Ringtone"
+rootProject.name = "Wrist Ring"
 include(":phone", ":watch")

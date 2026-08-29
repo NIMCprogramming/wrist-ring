@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.wearable.Wearable
@@ -111,7 +112,7 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
                 else -> R.string.call_screening_disabled
             },
         )
-        findViewById<Button>(R.id.call_screening).isEnabled = !enabled
+        findViewById<Button>(R.id.call_screening).visibility = if (enabled) View.GONE else View.VISIBLE
     }
 
     companion object {
