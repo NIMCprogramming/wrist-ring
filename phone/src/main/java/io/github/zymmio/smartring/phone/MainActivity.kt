@@ -4,13 +4,14 @@ import android.Manifest
 import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.wearable.Wearable
 
-class MainActivity : Activity() {
+class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -19,6 +20,8 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        getSharedPreferences(WatchState.PREFS, MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(this)
         Wearable.getNodeClient(this).connectedNodes
             .addOnSuccessListener {
                 WatchState.setConnected(this, it.isNotEmpty())
@@ -30,6 +33,16 @@ class MainActivity : Activity() {
             }
         showState()
         showRoleState()
+    }
+
+    override fun onPause() {
+        getSharedPreferences(WatchState.PREFS, MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(this)
+        super.onPause()
+    }
+
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences?, key: String?) {
+        showState()
     }
 
     private fun showState() {
