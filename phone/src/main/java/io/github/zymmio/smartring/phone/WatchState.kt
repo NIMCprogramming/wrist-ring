@@ -17,4 +17,9 @@ object WatchState {
             }
         }.apply()
     }
+
+    fun shouldSilenceCall(context: Context): Boolean {
+        val state = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        return state.getBoolean(CONNECTED, false) && state.getBoolean(ON_WRIST, false)
+    }
 }

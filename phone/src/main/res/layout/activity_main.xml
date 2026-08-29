@@ -20,4 +20,18 @@
         android:text="@string/status_unknown"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
+    <TextView
+        android:id="@+id/call_screening_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/call_screening_disabled" />
+
+    <Button
+        android:id="@+id/call_screening"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/enable_call_screening" />
+
 </LinearLayout>

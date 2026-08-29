@@ -5,4 +5,7 @@
     <string name="status_disconnected">Watch disconnected</string>
     <string name="status_on_wrist">On wrist</string>
     <string name="status_off_wrist">Off wrist</string>
+    <string name="call_screening_enabled">Call screening enabled</string>
+    <string name="call_screening_disabled">Call screening disabled</string>
+    <string name="enable_call_screening">Enable call screening</string>
 </resources>

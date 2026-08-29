@@ -19,9 +19,13 @@ if [[ -z "$PHONE" || -z "$WATCH" ]]; then
   exit 1
 fi
 
+echo "Building debug apps..."
 ./gradlew :phone:assembleDebug :watch:assembleDebug --quiet
+echo "Installing phone app..."
 "$ADB" -s "$PHONE" install -r phone/build/outputs/apk/debug/phone-debug.apk >/dev/null
+echo "Installing watch app..."
 "$ADB" -s "$WATCH" install -r watch/build/outputs/apk/debug/watch-debug.apk >/dev/null
+echo "Starting apps..."
 "$ADB" -s "$PHONE" shell am start \
   -n io.github.zymmio.smartring/.phone.MainActivity >/dev/null
 "$ADB" -s "$WATCH" shell am start \
@@ -30,6 +34,8 @@ sleep 2
 
 assert_state() {
   local expected="$1"
+  local expected_silence="$4"
+  echo "Testing $expected..."
   "$ADB" -s "$PHONE" logcat -c
   "$ADB" -s "$WATCH" shell am broadcast \
     -n io.github.zymmio.smartring/.watch.DebugWristStateReceiver \
@@ -41,8 +47,8 @@ assert_state() {
     "$ADB" -s "$PHONE" shell am broadcast \
       -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
       -a io.github.zymmio.smartring.DEBUG_READ_STATE >/dev/null
-    if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=$expected"; then
-      echo "PASS: $expected"
+    if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=$expected silence=$expected_silence"; then
+      echo "PASS: $expected, silence=$expected_silence"
       return
     fi
   done
@@ -51,16 +57,16 @@ assert_state() {
   exit 1
 }
 
-assert_state on_wrist true true
-assert_state off_wrist true false
-assert_state unknown false false
+assert_state on_wrist true true true
+assert_state off_wrist true false false
+assert_state unknown false false false
 
 "$ADB" -s "$PHONE" logcat -c
 "$ADB" -s "$PHONE" shell am broadcast \
   -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
   -a io.github.zymmio.smartring.DEBUG_READ_STATE \
   --ez connected false >/dev/null
-if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=disconnected"; then
+if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=disconnected silence=false"; then
   echo "PASS: disconnected clears wrist state"
 else
   echo "FAIL: disconnected did not clear wrist state" >&2

@@ -28,8 +28,8 @@ The physical sensor still needs these short manual checks:
 
 ## Call test gate
 
-Do not add automatic call silencing until the wrist-state test is reliable.
-After call screening is added, test these cases:
+On the phone, press `Enable call screening`, allow Contacts access, and accept
+Android's call-screening role. Then test these cases with a real incoming call:
 
 | Watch state | Expected phone result | Expected watch result |
 | --- | --- | --- |

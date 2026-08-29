@@ -20,6 +20,9 @@ Android CallScreeningService
         +-- off wrist or unknown   -> keep normal phone behavior
 ```
 
+`SmartCallScreeningService` keeps the default call screen and call log. Its only
+change is `silenceCall=true` when `WatchState` is both connected and on wrist.
+
 ## Message contract
 
 Path: `/wrist-state`

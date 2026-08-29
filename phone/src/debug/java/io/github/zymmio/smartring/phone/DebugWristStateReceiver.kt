@@ -17,7 +17,7 @@ class DebugWristStateReceiver : BroadcastReceiver() {
             state.getBoolean(WristStateListenerService.ON_WRIST, false) -> "on_wrist"
             else -> "off_wrist"
         }
-        Log.i(TAG, "state=$value")
+        Log.i(TAG, "state=$value silence=${WatchState.shouldSilenceCall(context)}")
     }
 
     companion object {
