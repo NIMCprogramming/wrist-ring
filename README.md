@@ -1,12 +1,13 @@
 # Wrist Ring
 
-Wrist Ring is an Android app for a CMF Phone 1 and Galaxy Watch4.
-It will silence an incoming call on the phone when the watch is on the user's
-wrist. It must not change the watch's sound or vibration settings.
+Wrist Ring silences incoming calls on the phone while a paired Wear OS watch is
+on the user's wrist. The watch keeps its existing sound and vibration settings.
+
+The first tested devices are CMF Phone 1 and Samsung Galaxy Watch4.
 
 ## Project modules
 
-- `phone`: receives wrist state and will make the per-call sound decision.
+- `phone`: receives wrist state and controls only the phone ringtone.
 - `watch`: reads the low-latency off-body sensor and sends state changes.
 - `docs`: records product rules, architecture, and the first device test.
 
@@ -21,13 +22,27 @@ boundary between the two apps.
 4. Run `phone` on the CMF Phone 1.
 5. Run `watch` on the paired Galaxy Watch4.
 
-The current skeleton only proves wrist-state delivery. Call silencing is held
-back until that delivery and the real call-alert behavior are tested.
+The phone keeps its normal call screen. On-wrist calls stay quiet on the phone
+while the watch still alerts. Off-wrist, unknown, stale, and disconnected states
+use the phone's normal ringtone behavior.
 
 ## Command-line check
 
 ```sh
 ./gradlew lint test
+```
+
+## Release signing
+
+Release builds use `release.keystore` and `keystore.properties` in the project
+root. Both files are local and ignored by Git. Back them up securely; updates
+cannot be signed without the same key.
+
+Debug builds work without these local files. A release built without them is
+unsigned and cannot be installed directly.
+
+```sh
+./gradlew :phone:assembleRelease :watch:assembleRelease
 ```
 
 With the CMF Phone 1 and Galaxy Watch4 connected through ADB, run the automated
