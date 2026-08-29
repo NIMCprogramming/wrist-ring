@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -65,22 +64,12 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
         .getBoolean(WristMonitorService.MONITORING, false)
 
     private fun startMonitoring() {
-        val missingPermissions = buildList {
-            if (checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
-                add(Manifest.permission.ACTIVITY_RECOGNITION)
-            }
-            if (Build.VERSION.SDK_INT >= 33 &&
-                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-            ) {
-                add(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-        if (missingPermissions.isEmpty()) {
+        if (checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             startForegroundService(
                 Intent(this, WristMonitorService::class.java).setAction(WristMonitorService.ACTION_START),
             )
         } else {
-            requestPermissions(missingPermissions.toTypedArray(), PERMISSION_REQUEST)
+            requestPermissions(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION), PERMISSION_REQUEST)
         }
     }
 
