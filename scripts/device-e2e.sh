@@ -58,6 +58,19 @@ assert_state() {
 }
 
 assert_state on_wrist true true true
+
+"$ADB" -s "$PHONE" logcat -c
+"$ADB" -s "$PHONE" shell am broadcast \
+  -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
+  -a io.github.zymmio.smartring.DEBUG_READ_STATE \
+  --ez stale true >/dev/null
+if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=on_wrist silence=false"; then
+  echo "PASS: stale on_wrist, silence=false"
+else
+  echo "FAIL: stale wrist state was trusted" >&2
+  exit 1
+fi
+
 assert_state off_wrist true false false
 assert_state unknown false false false
 

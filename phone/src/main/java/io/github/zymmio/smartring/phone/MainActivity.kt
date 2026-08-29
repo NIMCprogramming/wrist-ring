@@ -38,7 +38,7 @@ class MainActivity : Activity() {
         findViewById<TextView>(R.id.status).text = when {
             state.contains(WatchState.CONNECTED) && !state.getBoolean(WatchState.CONNECTED, false) ->
                 getString(R.string.status_disconnected)
-            !known -> getString(R.string.status_unknown)
+            !known || !WatchState.isFresh(this) -> getString(R.string.status_unknown)
             state.getBoolean(WristStateListenerService.ON_WRIST, false) -> getString(R.string.status_on_wrist)
             else -> getString(R.string.status_off_wrist)
         }

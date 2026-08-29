@@ -18,9 +18,11 @@ class WristStateListenerService : WearableListenerService() {
                     if (data.getBoolean(MONITORING)) {
                         putBoolean(ON_WRIST, data.getBoolean(ON_WRIST))
                         putLong(UPDATED_AT, data.getLong(UPDATED_AT))
+                        putLong(WatchState.RECEIVED_AT, System.currentTimeMillis())
                     } else {
                         remove(ON_WRIST)
                         remove(UPDATED_AT)
+                        remove(WatchState.RECEIVED_AT)
                     }
                 }.apply()
             }

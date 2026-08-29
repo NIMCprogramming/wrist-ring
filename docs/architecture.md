@@ -47,6 +47,11 @@ changes. It does not poll every 10 seconds. The phone will track connection sepa
 health message may be added only if device tests show that connection events
 are not reliable enough.
 
+The foreground service sends a health message every five minutes. The
+phone stops trusting wrist data after ten minutes without a message. The watch
+restarts monitoring after a reboot or app update only when monitoring was active
+before it stopped.
+
 ## Implementation order
 
 1. Prove on-wrist and off-wrist messages on the two real devices.

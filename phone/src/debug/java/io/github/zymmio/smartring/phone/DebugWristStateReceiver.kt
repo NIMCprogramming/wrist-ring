@@ -11,6 +11,9 @@ class DebugWristStateReceiver : BroadcastReceiver() {
             WatchState.setConnected(context, intent.getBooleanExtra(CONNECTED, false))
         }
         val state = context.getSharedPreferences(WristStateListenerService.PREFS, Context.MODE_PRIVATE)
+        if (intent.getBooleanExtra(STALE, false)) {
+            state.edit().putLong(WatchState.RECEIVED_AT, 0).apply()
+        }
         val value = when {
             state.contains(WatchState.CONNECTED) && !state.getBoolean(WatchState.CONNECTED, false) -> "disconnected"
             !state.contains(WristStateListenerService.ON_WRIST) -> "unknown"
@@ -23,5 +26,6 @@ class DebugWristStateReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "SmartRingtoneE2E"
         private const val CONNECTED = "connected"
+        private const val STALE = "stale"
     }
 }

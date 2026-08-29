@@ -9,11 +9,14 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 
 class WristMonitorService : Service(), SensorEventListener {
+    private val handler = Handler(Looper.getMainLooper())
     private val sensorManager by lazy { getSystemService(SensorManager::class.java) }
     private val offBodySensor by lazy {
         sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT)
@@ -52,6 +55,8 @@ class WristMonitorService : Service(), SensorEventListener {
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(MONITORING, true).apply()
         sensorManager.unregisterListener(this)
         sensorManager.registerListener(this, offBodySensor, SensorManager.SENSOR_DELAY_NORMAL)
+        handler.removeCallbacks(heartbeat)
+        handler.postDelayed(heartbeat, HEARTBEAT_INTERVAL)
         return START_STICKY
     }
 
@@ -64,6 +69,7 @@ class WristMonitorService : Service(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     override fun onDestroy() {
+        handler.removeCallbacks(heartbeat)
         sensorManager.unregisterListener(this)
         super.onDestroy()
     }
@@ -71,6 +77,7 @@ class WristMonitorService : Service(), SensorEventListener {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun stopMonitoring() {
+        handler.removeCallbacks(heartbeat)
         sensorManager.unregisterListener(this)
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().clear().apply()
         sendState(monitoring = false, onWrist = false)
@@ -87,6 +94,16 @@ class WristMonitorService : Service(), SensorEventListener {
         Wearable.getDataClient(this).putDataItem(request)
     }
 
+    private val heartbeat = object : Runnable {
+        override fun run() {
+            val state = getSharedPreferences(PREFS, MODE_PRIVATE)
+            if (state.contains(ON_WRIST)) {
+                sendState(monitoring = true, onWrist = state.getBoolean(ON_WRIST, false))
+            }
+            handler.postDelayed(this, HEARTBEAT_INTERVAL)
+        }
+    }
+
     companion object {
         const val ACTION_START = "start"
         const val ACTION_STOP = "stop"
@@ -98,5 +115,6 @@ class WristMonitorService : Service(), SensorEventListener {
         private const val UPDATED_AT = "updated_at"
         private const val CHANNEL = "wrist_monitoring"
         private const val NOTIFICATION_ID = 1
+        private const val HEARTBEAT_INTERVAL = 5 * 60 * 1000L
     }
 }
