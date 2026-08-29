@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Smart Ringtone</string>
+    <string name="title">Watch wrist state</string>
+    <string name="status_unknown">Unknown</string>
+    <string name="status_on_wrist">On wrist</string>
+    <string name="status_off_wrist">Off wrist</string>
+</resources>
