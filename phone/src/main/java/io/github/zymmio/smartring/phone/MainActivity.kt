@@ -45,8 +45,10 @@ class MainActivity : Activity() {
     }
 
     private fun enableCallScreening() {
-        if (checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), CONTACTS_REQUEST)
+        val permissions = arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.READ_PHONE_STATE)
+            .filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+        if (permissions.isNotEmpty()) {
+            requestPermissions(permissions.toTypedArray(), PERMISSIONS_REQUEST)
             return
         }
         requestCallScreeningRole()
@@ -70,7 +72,10 @@ class MainActivity : Activity() {
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CONTACTS_REQUEST && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSIONS_REQUEST &&
+            checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
+            checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+        ) {
             requestCallScreeningRole()
         }
     }
@@ -82,15 +87,22 @@ class MainActivity : Activity() {
 
     private fun showRoleState() {
         val roles = getSystemService(RoleManager::class.java)
-        val enabled = roles.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)
+        val roleHeld = roles.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)
+        val permissionsGranted = checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
+            checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+        val enabled = roleHeld && permissionsGranted
         findViewById<TextView>(R.id.call_screening_status).setText(
-            if (enabled) R.string.call_screening_enabled else R.string.call_screening_disabled,
+            when {
+                enabled -> R.string.call_screening_enabled
+                roleHeld -> R.string.call_screening_permission_needed
+                else -> R.string.call_screening_disabled
+            },
         )
         findViewById<Button>(R.id.call_screening).isEnabled = !enabled
     }
 
     companion object {
-        private const val CONTACTS_REQUEST = 1
+        private const val PERMISSIONS_REQUEST = 1
         private const val ROLE_REQUEST = 2
     }
 }

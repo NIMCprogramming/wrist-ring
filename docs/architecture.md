@@ -20,8 +20,11 @@ Android CallScreeningService
         +-- off wrist or unknown   -> keep normal phone behavior
 ```
 
-`SmartCallScreeningService` keeps the default call screen and call log. Its only
-change is `silenceCall=true` when `WatchState` is both connected and on wrist.
+`SmartCallScreeningService` keeps the default call screen and call log. Android's
+`silenceCall` flag also suppresses the Wear OS alert, so the service leaves that
+flag off. When `WatchState` is connected and on wrist, it temporarily mutes only
+the phone ring audio stream. `CallStateReceiver` restores the previous unmuted
+state when the call ends. If the phone was already muted, the app does not unmute it.
 
 ## Message contract
 

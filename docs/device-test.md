@@ -28,8 +28,9 @@ The physical sensor still needs these short manual checks:
 
 ## Call test gate
 
-On the phone, press `Enable call screening`, allow Contacts access, and accept
-Android's call-screening role. Then test these cases with a real incoming call:
+On the phone, press `Enable call screening`, allow Contacts and Phone access,
+and accept Android's call-screening role. Then test these cases with a real
+incoming call:
 
 | Watch state | Expected phone result | Expected watch result |
 | --- | --- | --- |

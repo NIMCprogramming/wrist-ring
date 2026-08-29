@@ -5,10 +5,11 @@ import android.telecom.CallScreeningService
 
 class SmartCallScreeningService : CallScreeningService() {
     override fun onScreenCall(details: Call.Details) {
+        if (WatchState.shouldSilenceCall(this)) PhoneRingtone.mute(this) else PhoneRingtone.restore(this)
         respondToCall(
             details,
             CallResponse.Builder()
-                .setSilenceCall(WatchState.shouldSilenceCall(this))
+                .setSilenceCall(false)
                 .setDisallowCall(false)
                 .setRejectCall(false)
                 .setSkipCallLog(false)
