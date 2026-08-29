@@ -7,13 +7,23 @@ Devices:
 
 ## Wrist-state test
 
+Run the automated phone-watch communication test first:
+
+```sh
+./scripts/device-e2e.sh
+```
+
+The physical sensor still needs these short manual checks:
+
 1. Install both modules with the same build variant.
 2. Open the watch app.
 3. Put on and unlock the watch. Confirm both apps show `On wrist`.
 4. Remove the watch. Confirm both apps show `Off wrist`.
 5. Repeat ten times and record late or wrong updates.
 6. Disconnect Bluetooth and record what each app shows.
-7. Close the watch app and check whether updates stop.
+7. Close the watch app. Confirm its active notification remains visible.
+8. Put on and remove the watch again. Confirm phone updates continue.
+9. Press `Stop` in the watch app. Confirm the phone shows `Unknown` after reopening it.
 
 ## Call test gate
 

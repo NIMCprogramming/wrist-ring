@@ -1,54 +1,105 @@
 package io.github.zymmio.smartring.watch
 
+import android.Manifest
 import android.app.Activity
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
-import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.Wearable
 
-class MainActivity : Activity(), SensorEventListener {
-    private val sensorManager by lazy { getSystemService(SensorManager::class.java) }
-    private val offBodySensor by lazy {
-        sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT)
-    }
-
+class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        findViewById<Button>(R.id.monitoring).setOnClickListener {
+            if (isMonitoring()) {
+                startService(
+                    Intent(this, WristMonitorService::class.java).setAction(WristMonitorService.ACTION_STOP),
+                )
+                window.decorView.postDelayed(::showState, 200)
+            } else {
+                startMonitoring()
+            }
+        }
+
+        startMonitoring()
     }
 
     override fun onResume() {
         super.onResume()
-        sensorManager.registerListener(this, offBodySensor, SensorManager.SENSOR_DELAY_NORMAL)
+        getSharedPreferences(WristMonitorService.PREFS, MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(this)
+        showState()
     }
 
     override fun onPause() {
-        sensorManager.unregisterListener(this)
+        getSharedPreferences(WristMonitorService.PREFS, MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(this)
         super.onPause()
     }
 
-    override fun onSensorChanged(event: SensorEvent) {
-        val onWrist = event.values[0] == 1f
-        findViewById<TextView>(R.id.status).setText(
-            if (onWrist) R.string.status_on_wrist else R.string.status_off_wrist,
-        )
-
-        val request = PutDataMapRequest.create(PATH).apply {
-            dataMap.putBoolean(ON_WRIST, onWrist)
-            dataMap.putLong(UPDATED_AT, System.currentTimeMillis())
-        }.asPutDataRequest().setUrgent()
-        Wearable.getDataClient(this).putDataItem(request)
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences?, key: String?) {
+        showState()
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+    private fun showState() {
+        val preferences = getSharedPreferences(WristMonitorService.PREFS, MODE_PRIVATE)
+        val monitoring = isMonitoring()
+        findViewById<TextView>(R.id.status).setText(
+            when {
+                !monitoring || !preferences.contains(WristMonitorService.ON_WRIST) -> R.string.status_waiting
+                preferences.getBoolean(WristMonitorService.ON_WRIST, false) -> R.string.status_on_wrist
+                else -> R.string.status_off_wrist
+            },
+        )
+        findViewById<Button>(R.id.monitoring).setText(
+            if (monitoring) R.string.stop_monitoring else R.string.start_monitoring,
+        )
+    }
+
+    private fun isMonitoring() = getSharedPreferences(WristMonitorService.PREFS, MODE_PRIVATE)
+        .getBoolean(WristMonitorService.MONITORING, false)
+
+    private fun startMonitoring() {
+        val missingPermissions = buildList {
+            if (checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
+                add(Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+            if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        if (missingPermissions.isEmpty()) {
+            startForegroundService(
+                Intent(this, WristMonitorService::class.java).setAction(WristMonitorService.ACTION_START),
+            )
+        } else {
+            requestPermissions(missingPermissions.toTypedArray(), PERMISSION_REQUEST)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST &&
+            checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            startForegroundService(
+                Intent(this, WristMonitorService::class.java).setAction(WristMonitorService.ACTION_START),
+            )
+        }
+    }
 
     companion object {
-        private const val PATH = "/wrist-state"
-        private const val ON_WRIST = "on_wrist"
-        private const val UPDATED_AT = "updated_at"
+        private const val PERMISSION_REQUEST = 1
     }
 }

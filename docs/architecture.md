@@ -27,6 +27,7 @@ Path: `/wrist-state`
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `on_wrist` | Boolean | `true` when the off-body sensor reports on body |
+| `monitoring` | Boolean | `true` while the watch foreground service is active |
 | `updated_at` | Long | Watch wall-clock time in Unix milliseconds |
 
 The phone treats data as untrusted input. Unknown, disconnected, or invalid
@@ -34,8 +35,8 @@ state must fail safely by allowing the normal ringtone.
 
 ## Battery rule
 
-The watch sends a Data Layer item only when sensor state changes. It does not
-poll every 10 seconds. The phone will track connection separately. A slow
+The watch foreground service sends a Data Layer item only when sensor state
+changes. It does not poll every 10 seconds. The phone will track connection separately. A slow
 health message may be added only if device tests show that connection events
 are not reliable enough.
 

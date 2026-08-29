@@ -29,3 +29,13 @@ back until that delivery and the real call-alert behavior are tested.
 ```sh
 ./gradlew lint test
 ```
+
+With the CMF Phone 1 and Galaxy Watch4 connected through ADB, run the automated
+Data Layer test:
+
+```sh
+./scripts/device-e2e.sh
+```
+
+This test installs debug builds and checks on-wrist, off-wrist, and stopped
+monitoring messages. It does not test the physical off-body sensor.

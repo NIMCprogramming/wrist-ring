@@ -11,10 +11,14 @@ class WristStateListenerService : WearableListenerService() {
             .filter { it.type == DataEvent.TYPE_CHANGED && it.dataItem.uri.path == PATH }
             .forEach {
                 val data = DataMapItem.fromDataItem(it.dataItem).dataMap
-                getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                    .putBoolean(ON_WRIST, data.getBoolean(ON_WRIST))
-                    .putLong(UPDATED_AT, data.getLong(UPDATED_AT))
-                    .apply()
+                getSharedPreferences(PREFS, MODE_PRIVATE).edit().apply {
+                    if (data.getBoolean(MONITORING)) {
+                        putBoolean(ON_WRIST, data.getBoolean(ON_WRIST))
+                        putLong(UPDATED_AT, data.getLong(UPDATED_AT))
+                    } else {
+                        clear()
+                    }
+                }.apply()
             }
     }
 
@@ -23,5 +27,6 @@ class WristStateListenerService : WearableListenerService() {
         const val PREFS = "wrist_state"
         const val ON_WRIST = "on_wrist"
         const val UPDATED_AT = "updated_at"
+        private const val MONITORING = "monitoring"
     }
 }
