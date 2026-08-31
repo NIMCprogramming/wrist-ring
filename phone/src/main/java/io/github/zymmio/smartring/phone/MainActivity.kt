@@ -25,12 +25,12 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
             .registerOnSharedPreferenceChangeListener(this)
         Wearable.getNodeClient(this).connectedNodes
             .addOnSuccessListener {
-                WatchState.setConnected(this, it.isNotEmpty())
-                showState()
+                val connected = it.isNotEmpty()
+                WatchState.setConnected(this, connected)
+                if (connected) refreshWristState()
             }
             .addOnFailureListener {
                 WatchState.setConnected(this, false)
-                showState()
             }
         showState()
         showRoleState()
@@ -55,6 +55,15 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
             !known || !WatchState.isFresh(this) -> getString(R.string.status_unknown)
             state.getBoolean(WristStateListenerService.ON_WRIST, false) -> getString(R.string.status_on_wrist)
             else -> getString(R.string.status_off_wrist)
+        }
+    }
+
+    private fun refreshWristState() {
+        Wearable.getDataClient(this).dataItems.addOnSuccessListener { items ->
+            items.use {
+                it.filter { item -> item.uri.path == WristStateListenerService.PATH }
+                    .forEach { item -> WristStateListenerService.saveDataItem(this, item) }
+            }
         }
     }
 

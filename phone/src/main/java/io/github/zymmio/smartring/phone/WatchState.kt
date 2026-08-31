@@ -29,8 +29,10 @@ object WatchState {
 
     fun isFresh(context: Context): Boolean {
         val receivedAt = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(RECEIVED_AT, 0)
-        return System.currentTimeMillis() - receivedAt in 0..MAX_STATE_AGE
+        return isFresh(receivedAt)
     }
+
+    fun isFresh(timestamp: Long) = System.currentTimeMillis() - timestamp in 0..MAX_STATE_AGE
 
     private const val MAX_STATE_AGE = 10 * 60 * 1000L
 }

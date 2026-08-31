@@ -59,6 +59,26 @@ assert_state() {
 
 assert_state on_wrist true true true
 
+echo "Testing cold-start state recovery..."
+"$ADB" -s "$PHONE" logcat -c
+"$ADB" -s "$PHONE" shell pm clear io.github.zymmio.smartring >/dev/null
+"$ADB" -s "$PHONE" shell am start \
+  -n io.github.zymmio.smartring/.phone.MainActivity >/dev/null
+for _ in {1..20}; do
+  sleep 1
+  "$ADB" -s "$PHONE" shell am broadcast \
+    -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
+    -a io.github.zymmio.smartring.DEBUG_READ_STATE >/dev/null
+  if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=on_wrist silence=true"; then
+    echo "PASS: cold start restored on_wrist"
+    break
+  fi
+done
+if ! "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=on_wrist silence=true"; then
+  echo "FAIL: cold start did not restore on_wrist" >&2
+  exit 1
+fi
+
 "$ADB" -s "$PHONE" logcat -c
 "$ADB" -s "$PHONE" shell am broadcast \
   -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
