@@ -2,11 +2,13 @@ package io.github.zymmio.smartring.phone
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationManager
 import android.app.role.RoleManager
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -74,6 +76,10 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
             requestPermissions(permissions.toTypedArray(), PERMISSIONS_REQUEST)
             return
         }
+        if (!getSystemService(NotificationManager::class.java).isNotificationPolicyAccessGranted) {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+            return
+        }
         requestCallScreeningRole()
     }
 
@@ -99,7 +105,7 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
             checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
             checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
         ) {
-            requestCallScreeningRole()
+            enableCallScreening()
         }
     }
 
@@ -113,11 +119,13 @@ class MainActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeListe
         val roleHeld = roles.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)
         val permissionsGranted = checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
             checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
-        val enabled = roleHeld && permissionsGranted
+        val policyAccessGranted = getSystemService(NotificationManager::class.java).isNotificationPolicyAccessGranted
+        val enabled = roleHeld && permissionsGranted && policyAccessGranted
         findViewById<TextView>(R.id.call_screening_status).setText(
             when {
                 enabled -> R.string.call_screening_enabled
-                roleHeld -> R.string.call_screening_permission_needed
+                !permissionsGranted -> R.string.call_screening_permission_needed
+                !policyAccessGranted -> R.string.call_screening_policy_needed
                 else -> R.string.call_screening_disabled
             },
         )

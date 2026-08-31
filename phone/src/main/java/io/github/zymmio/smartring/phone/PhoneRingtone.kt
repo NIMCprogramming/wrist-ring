@@ -2,11 +2,13 @@ package io.github.zymmio.smartring.phone
 
 import android.content.Context
 import android.media.AudioManager
+import android.app.NotificationManager
 
 object PhoneRingtone {
     private const val MUTED_BY_APP = "ringtone_muted_by_app"
 
     fun mute(context: Context) {
+        if (!context.getSystemService(NotificationManager::class.java).isNotificationPolicyAccessGranted) return
         val audio = context.getSystemService(AudioManager::class.java)
         if (!audio.isStreamMute(AudioManager.STREAM_RING)) {
             audio.adjustStreamVolume(AudioManager.STREAM_RING, AudioManager.ADJUST_MUTE, 0)

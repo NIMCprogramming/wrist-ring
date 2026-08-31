@@ -12,5 +12,6 @@
     <string name="call_screening_enabled">Ready · Phone rings only when needed</string>
     <string name="call_screening_disabled">Setup needed to control call sound</string>
     <string name="call_screening_permission_needed">One phone permission still needed</string>
+    <string name="call_screening_policy_needed">Allow Do Not Disturb access to control call sound</string>
     <string name="enable_call_screening">Finish setup</string>
 </resources>
