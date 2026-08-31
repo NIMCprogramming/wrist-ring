@@ -59,6 +59,30 @@ assert_state() {
 
 assert_state on_wrist true true true
 
+echo "Testing ringtone mute and restore..."
+"$ADB" -s "$PHONE" shell cmd notification allow_dnd io.github.zymmio.smartring
+"$ADB" -s "$PHONE" shell am broadcast \
+  -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
+  -a io.github.zymmio.smartring.DEBUG_READ_STATE \
+  --ez connected true --ez on_wrist true \
+  --es ringtone screen >/dev/null
+if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "state=on_wrist silence=true ringMuted=true"; then
+  echo "PASS: on-wrist call muted the ringtone"
+else
+  echo "FAIL: ringtone was not muted" >&2
+  exit 1
+fi
+"$ADB" -s "$PHONE" shell am broadcast \
+  -n io.github.zymmio.smartring/.phone.DebugWristStateReceiver \
+  -a io.github.zymmio.smartring.DEBUG_READ_STATE \
+  --es ringtone restore >/dev/null
+if "$ADB" -s "$PHONE" logcat -d -s SmartRingtoneE2E:I '*:S' | grep -q "ringMuted=false"; then
+  echo "PASS: call end restored the ringtone"
+else
+  echo "FAIL: ringtone was not restored" >&2
+  exit 1
+fi
+
 echo "Testing cold-start state recovery..."
 "$ADB" -s "$PHONE" logcat -c
 "$ADB" -s "$PHONE" shell pm clear io.github.zymmio.smartring >/dev/null

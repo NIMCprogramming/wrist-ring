@@ -7,6 +7,10 @@ import android.app.NotificationManager
 object PhoneRingtone {
     private const val MUTED_BY_APP = "ringtone_muted_by_app"
 
+    fun updateForWatchState(context: Context) {
+        if (WatchState.shouldSilenceCall(context)) mute(context) else restore(context)
+    }
+
     fun mute(context: Context) {
         if (!context.getSystemService(NotificationManager::class.java).isNotificationPolicyAccessGranted) return
         val audio = context.getSystemService(AudioManager::class.java)
