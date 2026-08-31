@@ -1,5 +1,6 @@
 package io.github.zymmio.smartring.watch
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -55,9 +56,12 @@ class WristMonitorService : Service(), SensorEventListener {
         )
 
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(MONITORING, true).apply()
-        if (!sensorRegistered) startSensor()
-        handler.removeCallbacks(heartbeat)
-        handler.postDelayed(heartbeat, HEARTBEAT_INTERVAL)
+        if (!sensorRegistered) {
+            startSensor()
+        } else if (hasFreshReading) {
+            sendState(monitoring = true, onWrist = getSharedPreferences(PREFS, MODE_PRIVATE).getBoolean(ON_WRIST, false))
+        }
+        scheduleHeartbeat()
         return START_STICKY
     }
 
@@ -72,7 +76,7 @@ class WristMonitorService : Service(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     override fun onDestroy() {
-        handler.removeCallbacks(heartbeat)
+        cancelHeartbeat()
         handler.removeCallbacks(retrySensor)
         sensorManager.unregisterListener(this)
         super.onDestroy()
@@ -81,7 +85,7 @@ class WristMonitorService : Service(), SensorEventListener {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun stopMonitoring() {
-        handler.removeCallbacks(heartbeat)
+        cancelHeartbeat()
         handler.removeCallbacks(retrySensor)
         sensorManager.unregisterListener(this)
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().clear().apply()
@@ -98,6 +102,25 @@ class WristMonitorService : Service(), SensorEventListener {
         }.asPutDataRequest().setUrgent()
         Wearable.getDataClient(this).putDataItem(request)
     }
+
+    private fun scheduleHeartbeat() {
+        getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            android.os.SystemClock.elapsedRealtime() + HEARTBEAT_INTERVAL,
+            heartbeatIntent(),
+        )
+    }
+
+    private fun cancelHeartbeat() {
+        getSystemService(AlarmManager::class.java).cancel(heartbeatIntent())
+    }
+
+    private fun heartbeatIntent() = PendingIntent.getService(
+        this,
+        1,
+        Intent(this, WristMonitorService::class.java).setAction(ACTION_HEARTBEAT),
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+    )
 
     private fun startSensor() {
         hasFreshReading = false
@@ -126,19 +149,10 @@ class WristMonitorService : Service(), SensorEventListener {
         }
     }
 
-    private val heartbeat = object : Runnable {
-        override fun run() {
-            val state = getSharedPreferences(PREFS, MODE_PRIVATE)
-            if (hasFreshReading && state.contains(ON_WRIST)) {
-                sendState(monitoring = true, onWrist = state.getBoolean(ON_WRIST, false))
-            }
-            handler.postDelayed(this, HEARTBEAT_INTERVAL)
-        }
-    }
-
     companion object {
         const val ACTION_START = "start"
         const val ACTION_STOP = "stop"
+        private const val ACTION_HEARTBEAT = "heartbeat"
         const val PREFS = "wrist_state"
         const val MONITORING = "monitoring"
         const val ON_WRIST = "on_wrist"

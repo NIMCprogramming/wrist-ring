@@ -34,5 +34,5 @@ object WatchState {
 
     fun isFresh(timestamp: Long) = System.currentTimeMillis() - timestamp in 0..MAX_STATE_AGE
 
-    private const val MAX_STATE_AGE = 10 * 60 * 1000L
+    private const val MAX_STATE_AGE = 15 * 60 * 1000L
 }

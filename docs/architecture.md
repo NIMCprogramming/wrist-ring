@@ -47,8 +47,8 @@ changes. It does not poll every 10 seconds. The phone will track connection sepa
 health message may be added only if device tests show that connection events
 are not reliable enough.
 
-The foreground service sends a health message every five minutes. The
-phone stops trusting wrist data after ten minutes without a message. The watch
+The foreground service schedules a wake-up health message every five minutes. The
+phone stops trusting wrist data after fifteen minutes without a message. The watch
 restarts monitoring after a reboot or app update only when monitoring was active
 before it stopped. A restarted watch publishes `Unknown` until it receives a
 fresh sensor event. It retries sensor registration every ten seconds and never
